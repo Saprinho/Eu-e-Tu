@@ -1,6 +1,5 @@
-export async function comprimir(f: File): Promise<Blob> {
+export async function comprimir(f: File, max = 800): Promise<Blob> {
   const img = await createImageBitmap(f)
-  const max = 800
   const escala = Math.min(1, max / Math.max(img.width, img.height))
   const w = Math.round(img.width * escala)
   const h = Math.round(img.height * escala)
