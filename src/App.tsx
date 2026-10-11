@@ -1,4 +1,13 @@
+import { useState } from 'react'
+import Auth from './Auth'
+
 export default function App() {
+  const [ecra, setEcra] = useState<'inicio' | 'criar' | 'entrar'>('inicio')
+
+  if (ecra !== 'inicio') {
+    return <Auth modoInicial={ecra} onVoltar={() => setEcra('inicio')} />
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="px-6 pt-10 pb-12 text-center text-white bg-gradient-to-br from-roxo via-azul to-rosa rounded-b-[2.5rem] shadow-lg">
@@ -16,10 +25,16 @@ export default function App() {
         </p>
 
         <div className="mt-8 flex flex-col gap-3">
-          <button className="rounded-full bg-gradient-to-r from-roxo to-rosa py-3 text-lg font-semibold text-white shadow-md">
+          <button
+            onClick={() => setEcra('criar')}
+            className="rounded-full bg-gradient-to-r from-roxo to-rosa py-3 text-lg font-semibold text-white shadow-md"
+          >
             Criar conta
           </button>
-          <button className="rounded-full border-2 border-roxo py-3 text-lg font-semibold text-roxo">
+          <button
+            onClick={() => setEcra('entrar')}
+            className="rounded-full border-2 border-roxo py-3 text-lg font-semibold text-roxo"
+          >
             Iniciar sessão
           </button>
         </div>
@@ -41,4 +56,4 @@ export default function App() {
       </main>
     </div>
   )
-}
+    }
