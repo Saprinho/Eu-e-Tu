@@ -1,8 +1,102 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
+import { supabase } from './supabase'
 import Auth from './Auth'
 
+type Aba = 'inicio' | 'videos' | 'publicar' | 'mensagens' | 'perfil'
+
+const abas: { id: Aba; texto: string }[] = [
+  { id: 'inicio', texto: 'Início' },
+  { id: 'videos', texto: 'Vídeos' },
+  { id: 'publicar', texto: 'Publicar' },
+  { id: 'mensagens', texto: 'Mensagens' },
+  { id: 'perfil', texto: 'Perfil' },
+]
+
+function Principal({ session }: { session: Session }) {
+  const [aba, setAba] = useState<Aba>('inicio')
+  const meta = session.user.user_metadata || {}
+  const nome = meta.nome || 'Utilizador'
+  const utilizador = meta.utilizador || ''
+
+  return (
+    <div className="min-h-screen bg-white pb-24">
+      <header className="px-6 py-5 text-white bg-gradient-to-r from-roxo via-azul to-rosa shadow-md">
+        <h1 className="text-2xl font-extrabold">Eu e Tu</h1>
+      </header>
+
+      <main className="px-6 py-6 max-w-md mx-auto">
+        {aba === 'inicio' && (
+          <div className="rounded-2xl bg-white p-5 shadow-md">
+            <h2 className="text-xl font-bold text-escuro">Bem-vindo, {nome}!</h2>
+            <p className="mt-2 text-gray-600">
+              As publicações dos teus amigos vão aparecer aqui.
+            </p>
+          </div>
+        )}
+
+        {aba === 'perfil' && (
+          <div className="rounded-2xl bg-white p-5 shadow-md text-center">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-roxo to-rosa text-4xl font-bold text-white">
+              {nome.charAt(0).toUpperCase()}
+            </div>
+            <h2 className="mt-3 text-xl font-bold text-escuro">{nome}</h2>
+            <p className="text-gray-600">@{utilizador}</p>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="mt-6 w-full rounded-full border-2 border-roxo py-3 font-semibold text-roxo"
+            >
+              Terminar sessão
+            </button>
+          </div>
+        )}
+
+        {aba !== 'inicio' && aba !== 'perfil' && (
+          <div className="rounded-2xl bg-white p-5 shadow-md text-center">
+            <p className="text-gray-600">Esta secção chega numa próxima etapa.</p>
+          </div>
+        )}
+      </main>
+
+      <nav className="fixed bottom-0 left-0 right-0 flex border-t border-gray-200 bg-white">
+        {abas.map((a) => (
+          <button
+            key={a.id}
+            onClick={() => setAba(a.id)}
+            className={
+              'flex-1 py-4 text-xs font-semibold ' +
+              (aba === a.id ? 'text-roxo' : 'text-gray-500')
+            }
+          >
+            {a.texto}
+          </button>
+        ))}
+      </nav>
+    </div>
+  )
+}
+
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null)
+  const [aCarregar, setACarregar] = useState(true)
   const [ecra, setEcra] = useState<'inicio' | 'criar' | 'entrar'>('inicio')
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setACarregar(false)
+    })
+    const { data } = supabase.auth.onAuthStateChange((_evento, s) => {
+      setSession(s)
+    })
+    return () => data.subscription.unsubscribe()
+  }, [])
+
+  if (aCarregar) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500">A carregar...</div>
+  }
+
+  if (session) return <Principal session={session} />
 
   if (ecra !== 'inicio') {
     return <Auth modoInicial={ecra} onVoltar={() => setEcra('inicio')} />
@@ -38,22 +132,7 @@ export default function App() {
             Iniciar sessão
           </button>
         </div>
-
-        <div className="mt-10 grid gap-4">
-          <div className="rounded-2xl bg-white p-4 shadow-md">
-            <h2 className="font-bold text-escuro">Publicações</h2>
-            <p className="text-sm text-gray-600">Partilha textos, fotografias e vídeos.</p>
-          </div>
-          <div className="rounded-2xl bg-white p-4 shadow-md">
-            <h2 className="font-bold text-escuro">Vídeos</h2>
-            <p className="text-sm text-gray-600">Vê e cria vídeos curtos.</p>
-          </div>
-          <div className="rounded-2xl bg-white p-4 shadow-md">
-            <h2 className="font-bold text-escuro">Mensagens</h2>
-            <p className="text-sm text-gray-600">Conversa em privado com os teus amigos.</p>
-          </div>
-        </div>
       </main>
     </div>
   )
-    }
+}
