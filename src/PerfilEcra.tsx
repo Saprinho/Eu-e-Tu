@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import SecaoFoto from './SecaoFoto'
+import SecaoSenha from './SecaoSenha'
 
 type Perfil = {
   nome: string
@@ -17,23 +19,6 @@ function formatar(d: string | null | undefined) {
   return new Date(d).toLocaleString('pt-PT', { dateStyle: 'long', timeStyle: 'short' })
 }
 
-async function comprimir(f: File): Promise<Blob> {
-  const img = await createImageBitmap(f)
-  const max = 800
-  const escala = Math.min(1, max / Math.max(img.width, img.height))
-  const w = Math.round(img.width * escala)
-  const h = Math.round(img.height * escala)
-  const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('canvas')
-  ctx.drawImage(img, 0, 0, w, h)
-  return new Promise((res, rej) =>
-    canvas.toBlob((b) => (b ? res(b) : rej(new Error('blob'))), 'image/jpeg', 0.8)
-  )
-}
-
 export default function PerfilEcra({ session }: { session: Session }) {
   const [perfil, setPerfil] = useState<Perfil | null>(null)
   const [novoNome, setNovoNome] = useState('')
@@ -41,11 +26,6 @@ export default function PerfilEcra({ session }: { session: Session }) {
   const [local, setLocal] = useState('')
   const [nomeEm, setNomeEm] = useState<string | null>(null)
   const [senhaEm, setSenhaEm] = useState<string | null>(null)
-  const [atual, setAtual] = useState('')
-  const [nova, setNova] = useState('')
-  const [confirma, setConfirma] = useState('')
-  const [ficheiro, setFicheiro] = useState<Blob | null>(null)
-  const [previa, setPrevia] = useState('')
   const [msg, setMsg] = useState('')
   const [erro, setErro] = useState('')
   const [aGuardar, setAGuardar] = useState(false)
@@ -73,13 +53,9 @@ export default function PerfilEcra({ session }: { session: Session }) {
     carregar()
   }, [])
 
-  function limpar() {
+  async function guardarNome() {
     setMsg('')
     setErro('')
-  }
-
-  async function guardarNome() {
-    limpar()
     setAGuardar(true)
     const { data: res, error } = await supabase.rpc('alterar_nome', { p_nome: novoNome })
     if (error || !res) {
@@ -95,36 +71,9 @@ export default function PerfilEcra({ session }: { session: Session }) {
     setAGuardar(false)
   }
 
-  async function guardarSenha() {
-    limpar()
-    if (nova.length < 8) return setErro('A nova palavra-passe deve ter pelo menos 8 caracteres.')
-    if (nova !== confirma) return setErro('As palavras-passe novas não são iguais.')
-    setAGuardar(true)
-    const { error: e1 } = await supabase.auth.signInWithPassword({
-      email: session.user.email ?? '',
-      password: atual,
-    })
-    if (e1) {
-      setErro('A palavra-passe atual está incorreta.')
-      setAGuardar(false)
-      return
-    }
-    const { error: e2 } = await supabase.auth.updateUser({ password: nova })
-    if (e2) {
-      await carregar()
-      setErro('Não foi possível alterar a palavra-passe. Verifica se já passaram 15 dias desde a última alteração.')
-    } else {
-      setMsg('Palavra-passe alterada com sucesso!')
-      setAtual('')
-      setNova('')
-      setConfirma('')
-      await carregar()
-    }
-    setAGuardar(false)
-  }
-
   async function guardarDados() {
-    limpar()
+    setMsg('')
+    setErro('')
     setAGuardar(true)
     const { error } = await supabase
       .from('profiles')
@@ -135,19 +84,62 @@ export default function PerfilEcra({ session }: { session: Session }) {
     setAGuardar(false)
   }
 
-  async function escolher(e: React.ChangeEvent<HTMLInputElement>) {
-    limpar()
-    const f = e.target.files?.[0]
-    if (!f) return
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(f.type)) {
-      return setErro('Escolhe uma fotografia JPG, PNG ou WEBP.')
-    }
-    if (f.size > 15 * 1024 * 1024) {
-      return setErro('A fotografia é grande demais. O máximo é 15 MB.')
-    }
-    try {
-      const pequena = await comprimir(f)
-      setFicheiro(pequena)
-      setPrevia(URL.createObjectURL(pequena))
-    } catch {
-      setErro('Não foi possível pr
+  if (!perfil) return <p className="text-center text-gray-500">A carregar...</p>
+
+  const proximo = nomeEm ? new Date(new Date(nomeEm).getTime() + QUINZE_DIAS) : null
+  const bloqueado = proximo ? proximo.getTime() > Date.now() : false
+  const campo = 'w-full rounded-2xl border border-gray-300 px-4 py-3 text-base mt-2'
+
+  return (
+    <div className="flex flex-col gap-5">
+      <SecaoFoto
+        session={session}
+        nome={perfil.nome}
+        utilizador={perfil.utilizador}
+        fotoUrl={perfil.foto_url}
+        onMudou={carregar}
+      />
+
+      <div className="rounded-2xl bg-white p-5 shadow-md">
+        <h3 className="font-bold text-escuro">Nome</h3>
+        <input className={campo} value={novoNome} onChange={(e) => setNovoNome(e.target.value)} />
+        <button
+          onClick={guardarNome}
+          disabled={aGuardar || bloqueado}
+          className="mt-3 w-full rounded-full bg-gradient-to-r from-roxo to-rosa py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Alterar nome
+        </button>
+        <p className="mt-2 text-sm text-gray-600">Última alteração: {formatar(nomeEm)}</p>
+        <p className="text-sm text-gray-600">
+          Estado: {bloqueado && proximo ? 'bloqueado até ' + formatar(proximo.toISOString()) : 'disponível para alterar'}
+        </p>
+      </div>
+
+      <SecaoSenha session={session} senhaEm={senhaEm} onMudou={carregar} />
+
+      <div className="rounded-2xl bg-white p-5 shadow-md">
+        <h3 className="font-bold text-escuro">Sobre ti</h3>
+        <textarea className={campo} rows={3} placeholder="Biografia" value={bio} onChange={(e) => setBio(e.target.value)} />
+        <input className={campo} placeholder="Localização (opcional)" value={local} onChange={(e) => setLocal(e.target.value)} />
+        <button
+          onClick={guardarDados}
+          disabled={aGuardar}
+          className="mt-3 w-full rounded-full border-2 border-roxo py-3 font-semibold text-roxo disabled:opacity-60"
+        >
+          Guardar
+        </button>
+      </div>
+
+      {erro && <p className="text-red-600 font-medium">{erro}</p>}
+      {msg && <p className="text-green-700 font-medium">{msg}</p>}
+
+      <button
+        onClick={() => supabase.auth.signOut()}
+        className="w-full rounded-full border-2 border-gray-300 py-3 font-semibold text-gray-600"
+      >
+        Terminar sessão
+      </button>
+    </div>
+  )
+}
