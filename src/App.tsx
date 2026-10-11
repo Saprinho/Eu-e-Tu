@@ -3,6 +3,8 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import Auth from './Auth'
 import PerfilEcra from './PerfilEcra'
+import Feed from './Feed'
+import Publicar from './Publicar'
 
 type Aba = 'inicio' | 'videos' | 'publicar' | 'mensagens' | 'perfil'
 
@@ -16,8 +18,12 @@ const abas: { id: Aba; texto: string }[] = [
 
 function Principal({ session }: { session: Session }) {
   const [aba, setAba] = useState<Aba>('inicio')
-  const meta = session.user.user_metadata || {}
-  const nome = meta.nome || 'Utilizador'
+  const [versao, setVersao] = useState(0)
+
+  function publicado() {
+    setVersao(versao + 1)
+    setAba('inicio')
+  }
 
   return (
     <div className="min-h-screen bg-white pb-24">
@@ -25,19 +31,11 @@ function Principal({ session }: { session: Session }) {
         <h1 className="text-2xl font-extrabold">Eu e Tu</h1>
       </header>
 
-      <main className="px-6 py-6 max-w-md mx-auto">
-        {aba === 'inicio' && (
-          <div className="rounded-2xl bg-white p-5 shadow-md">
-            <h2 className="text-xl font-bold text-escuro">Bem-vindo, {nome}!</h2>
-            <p className="mt-2 text-gray-600">
-              As publicações dos teus amigos vão aparecer aqui.
-            </p>
-          </div>
-        )}
-
+      <main className="px-4 py-6 max-w-md mx-auto">
+        {aba === 'inicio' && <Feed meuId={session.user.id} versao={versao} />}
+        {aba === 'publicar' && <Publicar session={session} onPublicado={publicado} />}
         {aba === 'perfil' && <PerfilEcra session={session} />}
-
-        {aba !== 'inicio' && aba !== 'perfil' && (
+        {(aba === 'videos' || aba === 'mensagens') && (
           <div className="rounded-2xl bg-white p-5 shadow-md text-center">
             <p className="text-gray-600">Esta secção chega numa próxima etapa.</p>
           </div>
