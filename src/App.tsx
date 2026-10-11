@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import Auth from './Auth'
+import PerfilEcra from './PerfilEcra'
 
 type Aba = 'inicio' | 'videos' | 'publicar' | 'mensagens' | 'perfil'
 
@@ -17,7 +18,6 @@ function Principal({ session }: { session: Session }) {
   const [aba, setAba] = useState<Aba>('inicio')
   const meta = session.user.user_metadata || {}
   const nome = meta.nome || 'Utilizador'
-  const utilizador = meta.utilizador || ''
 
   return (
     <div className="min-h-screen bg-white pb-24">
@@ -35,21 +35,7 @@ function Principal({ session }: { session: Session }) {
           </div>
         )}
 
-        {aba === 'perfil' && (
-          <div className="rounded-2xl bg-white p-5 shadow-md text-center">
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-roxo to-rosa text-4xl font-bold text-white">
-              {nome.charAt(0).toUpperCase()}
-            </div>
-            <h2 className="mt-3 text-xl font-bold text-escuro">{nome}</h2>
-            <p className="text-gray-600">@{utilizador}</p>
-            <button
-              onClick={() => supabase.auth.signOut()}
-              className="mt-6 w-full rounded-full border-2 border-roxo py-3 font-semibold text-roxo"
-            >
-              Terminar sessão
-            </button>
-          </div>
-        )}
+        {aba === 'perfil' && <PerfilEcra session={session} />}
 
         {aba !== 'inicio' && aba !== 'perfil' && (
           <div className="rounded-2xl bg-white p-5 shadow-md text-center">
