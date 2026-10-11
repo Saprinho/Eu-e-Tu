@@ -15,13 +15,30 @@ function formatar(d: string | null | undefined) {
   return new Date(d).toLocaleString('pt-PT', { dateStyle: 'long', timeStyle: 'short' })
 }
 
+async function comprimir(f: File): Promise<Blob> {
+  const img = await createImageBitmap(f)
+  const max = 800
+  const escala = Math.min(1, max / Math.max(img.width, img.height))
+  const w = Math.round(img.width * escala)
+  const h = Math.round(img.height * escala)
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('canvas')
+  ctx.drawImage(img, 0, 0, w, h)
+  return new Promise((res, rej) =>
+    canvas.toBlob((b) => (b ? res(b) : rej(new Error('blob'))), 'image/jpeg', 0.8)
+  )
+}
+
 export default function PerfilEcra({ session }: { session: Session }) {
   const [perfil, setPerfil] = useState<Perfil | null>(null)
   const [novoNome, setNovoNome] = useState('')
   const [bio, setBio] = useState('')
   const [local, setLocal] = useState('')
   const [nomeEm, setNomeEm] = useState<string | null>(null)
-  const [ficheiro, setFicheiro] = useState<File | null>(null)
+  const [ficheiro, setFicheiro] = useState<Blob | null>(null)
   const [previa, setPrevia] = useState('')
   const [msg, setMsg] = useState('')
   const [erro, setErro] = useState('')
@@ -81,29 +98,33 @@ export default function PerfilEcra({ session }: { session: Session }) {
     setAGuardar(false)
   }
 
-  function escolher(e: React.ChangeEvent<HTMLInputElement>) {
+  async function escolher(e: React.ChangeEvent<HTMLInputElement>) {
     limpar()
     const f = e.target.files?.[0]
     if (!f) return
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(f.type)) {
       return setErro('Escolhe uma fotografia JPG, PNG ou WEBP.')
     }
-    if (f.size > 2 * 1024 * 1024) {
-      return setErro('A fotografia é grande demais. O máximo é 2 MB.')
+    if (f.size > 15 * 1024 * 1024) {
+      return setErro('A fotografia é grande demais. O máximo é 15 MB.')
     }
-    setFicheiro(f)
-    setPrevia(URL.createObjectURL(f))
+    try {
+      const pequena = await comprimir(f)
+      setFicheiro(pequena)
+      setPrevia(URL.createObjectURL(pequena))
+    } catch {
+      setErro('Não foi possível preparar a fotografia. Tenta outra.')
+    }
   }
 
   async function confirmarFoto() {
     if (!ficheiro) return
     limpar()
     setAGuardar(true)
-    const ext = ficheiro.type === 'image/png' ? 'png' : ficheiro.type === 'image/webp' ? 'webp' : 'jpg'
-    const caminho = session.user.id + '/' + Date.now() + '.' + ext
+    const caminho = session.user.id + '/' + Date.now() + '.jpg'
     const { error: e1 } = await supabase.storage
       .from('avatares')
-      .upload(caminho, ficheiro, { contentType: ficheiro.type })
+      .upload(caminho, ficheiro, { contentType: 'image/jpeg' })
     if (e1) {
       setErro('Não foi possível enviar a fotografia. Tenta outra vez.')
       setAGuardar(false)
