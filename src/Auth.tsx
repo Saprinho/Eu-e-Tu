@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from './supabase'
+import CampoSenha from './CampoSenha'
 
 type Props = {
   modoInicial: 'criar' | 'entrar'
@@ -85,10 +86,10 @@ export default function Auth({ modoInicial, onVoltar }: Props) {
           </>
         )}
         <input className={campo} placeholder="Número de telefone" inputMode="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
-        <input className={campo} placeholder="Palavra-passe" type="password" value={palavra} onChange={(e) => setPalavra(e.target.value)} />
+        <CampoSenha className={campo} placeholder="Palavra-passe" value={palavra} onChange={setPalavra} />
         {modo === 'criar' && (
           <>
-            <input className={campo} placeholder="Confirmar palavra-passe" type="password" value={confirma} onChange={(e) => setConfirma(e.target.value)} />
+            <CampoSenha className={campo} placeholder="Confirmar palavra-passe" value={confirma} onChange={setConfirma} />
             <label className="flex items-center gap-2 text-sm text-gray-600">
               <input type="checkbox" checked={termos} onChange={(e) => setTermos(e.target.checked)} />
               Aceito os termos de utilização e a política de privacidade
@@ -97,23 +98,4 @@ export default function Auth({ modoInicial, onVoltar }: Props) {
         )}
       </div>
 
-      {erro && <p className="mt-4 text-red-600 font-medium">{erro}</p>}
-      {aviso && <p className="mt-4 text-green-700 font-medium">{aviso}</p>}
-
-      <button
-        onClick={enviar}
-        disabled={aCarregar}
-        className="mt-6 w-full rounded-full bg-gradient-to-r from-roxo to-rosa py-3 text-lg font-semibold text-white shadow-md disabled:opacity-60"
-      >
-        {aCarregar ? 'Aguarda...' : modo === 'criar' ? 'Criar conta' : 'Entrar'}
-      </button>
-
-      <button
-        onClick={() => { setErro(''); setAviso(''); setModo(modo === 'criar' ? 'entrar' : 'criar') }}
-        className="mt-4 w-full text-roxo font-semibold"
-      >
-        {modo === 'criar' ? 'Já tenho conta' : 'Ainda não tenho conta'}
-      </button>
-    </div>
-  )
-}
+      {erro && <p className="mt-4 text-red-600 font-m
