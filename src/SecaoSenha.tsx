@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import CampoSenha from './CampoSenha'
 
 const QUINZE_DIAS = 15 * 24 * 60 * 60 * 1000
 
@@ -24,7 +25,7 @@ export default function SecaoSenha({ session, senhaEm, onMudou }: Props) {
 
   const proxima = senhaEm ? new Date(new Date(senhaEm).getTime() + QUINZE_DIAS) : null
   const bloqueada = proxima ? proxima.getTime() > Date.now() : false
-  const campo = 'w-full rounded-2xl border border-gray-300 px-4 py-3 text-base mt-2'
+  const campo = 'w-full rounded-2xl border border-gray-300 px-4 py-3 text-base'
 
   async function guardar() {
     setMsg('')
@@ -64,27 +65,15 @@ export default function SecaoSenha({ session, senhaEm, onMudou }: Props) {
   return (
     <div className="rounded-2xl bg-white p-5 shadow-md">
       <h3 className="font-bold text-escuro">Palavra-passe</h3>
-      <input
-        className={campo}
-        type="password"
-        placeholder="Palavra-passe atual"
-        value={atual}
-        onChange={(e) => setAtual(e.target.value)}
-      />
-      <input
-        className={campo}
-        type="password"
-        placeholder="Nova palavra-passe"
-        value={nova}
-        onChange={(e) => setNova(e.target.value)}
-      />
-      <input
-        className={campo}
-        type="password"
-        placeholder="Confirmar nova palavra-passe"
-        value={confirma}
-        onChange={(e) => setConfirma(e.target.value)}
-      />
+      <div className="mt-2">
+        <CampoSenha className={campo} placeholder="Palavra-passe atual" value={atual} onChange={setAtual} />
+      </div>
+      <div className="mt-2">
+        <CampoSenha className={campo} placeholder="Nova palavra-passe" value={nova} onChange={setNova} />
+      </div>
+      <div className="mt-2">
+        <CampoSenha className={campo} placeholder="Confirmar nova palavra-passe" value={confirma} onChange={setConfirma} />
+      </div>
       <button
         onClick={guardar}
         disabled={aGuardar || bloqueada}
