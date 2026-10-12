@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { comprimir } from './comprimir'
+import { Avatar } from './Fotos'
 
 type Props = {
   session: Session
@@ -78,17 +79,9 @@ export default function SecaoFoto({ session, nome, utilizador, fotoUrl, onMudou 
 
   return (
     <div className="rounded-2xl bg-white p-5 shadow-md text-center">
-      {foto ? (
-        <img
-          src={foto}
-          alt="Fotografia de perfil"
-          className="mx-auto h-24 w-24 rounded-full object-cover"
-        />
-      ) : (
-        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-roxo to-rosa text-4xl font-bold text-white">
-          {nome.charAt(0).toUpperCase()}
-        </div>
-      )}
+      <div className="flex justify-center">
+        <Avatar nome={nome} url={foto} tamanho="h-24 w-24" />
+      </div>
       <h2 className="mt-3 text-xl font-bold text-escuro">{nome}</h2>
       <p className="text-gray-600">@{utilizador}</p>
 
