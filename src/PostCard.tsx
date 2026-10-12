@@ -113,7 +113,16 @@ export default function PostCard({ post, meuId, onApagado }: Props) {
         guardado && <p className="mt-3 whitespace-pre-wrap text-gray-800">{guardado}</p>
       )}
 
-      {post.imagem_url && <FotoPost url={post.imagem_url} />}
+      {post.imagem_url && (
+        <FotoPost
+          url={post.imagem_url}
+          gostos={gostos}
+          gostei={gostei}
+          comentarios={comentarios}
+          onGosto={alternarGosto}
+          onComentar={() => setAberto(true)}
+        />
+      )}
 
       <div className="mt-3 flex flex-wrap gap-5 text-sm font-semibold">
         <button onClick={alternarGosto} className={gostei ? 'text-rosa' : 'text-gray-600'}>
