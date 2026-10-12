@@ -17,6 +17,7 @@ export default function Feed({ meuId, versao }: { meuId: string; versao: number 
     const { data, error } = await supabase
       .from('posts')
       .select(CAMPOS)
+      .is('video_url', null)
       .order('criado_em', { ascending: false })
       .range(de, de + POR_PAGINA - 1)
     if (error) {
