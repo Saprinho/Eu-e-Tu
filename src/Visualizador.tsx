@@ -57,30 +57,25 @@ export default function Visualizador(p: Props) {
     } catch {
       setMsg('Não foi possível copiar.')
     }
+  }
+
+  function escolher(acao: () => void) {
     setMenu(false)
+    acao()
   }
 
   const botao = 'flex flex-1 flex-col items-center gap-1 py-2 text-xs font-semibold text-white'
+  const item = 'block w-full border-b border-white/10 px-5 py-4 text-left text-base text-white'
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-black">
-      <div className="relative flex items-center justify-between p-3">
-        <button onClick={() => setMenu(!menu)} className="rounded-full bg-white/20 px-3 py-2 text-lg text-white">
-          ⚙
+      <div className="flex items-center justify-between p-3">
+        <button onClick={p.onFechar} className="rounded-full bg-white/20 px-4 py-2 text-lg font-semibold text-white">
+          ✕
         </button>
-        <button onClick={p.onFechar} className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold text-white">
-          Fechar
+        <button onClick={() => setMenu(true)} className="rounded-full bg-white/20 px-5 py-2 text-lg font-bold text-white">
+          ⋮
         </button>
-        {menu && (
-          <div className="absolute left-3 top-14 z-10 w-56 rounded-2xl bg-gray-900 p-2 text-white shadow-lg">
-            <button onClick={copiar} className="block w-full px-3 py-3 text-left text-sm">
-              Copiar link da foto
-            </button>
-            <a href={p.url} target="_blank" rel="noreferrer" className="block px-3 py-3 text-sm">
-              Abrir noutro separador
-            </a>
-          </div>
-        )}
       </div>
       <div className="flex flex-1 items-center justify-center overflow-hidden px-2">
         <img src={p.url} alt="Fotografia" className="max-h-full max-w-full object-contain" />
@@ -108,6 +103,31 @@ export default function Visualizador(p: Props) {
           </button>
         )}
       </div>
+
+      {menu && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60" onClick={() => setMenu(false)}>
+          <div className="rounded-t-3xl bg-gray-900 pb-4" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto my-3 h-1 w-12 rounded-full bg-white/30" />
+            {temAcoes && (
+              <button className={item} onClick={() => escolher(() => p.onComentar && p.onComentar())}>
+                Comentar
+              </button>
+            )}
+            <button className={item} onClick={() => escolher(partilhar)}>
+              Partilhar
+            </button>
+            <button className={item} onClick={() => escolher(descarregar)}>
+              Guardar
+            </button>
+            <button className={item} onClick={() => escolher(copiar)}>
+              Copiar link da foto
+            </button>
+            <a href={p.url} target="_blank" rel="noreferrer" className={item}>
+              Abrir noutro separador
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
