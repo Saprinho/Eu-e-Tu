@@ -4,6 +4,7 @@ import PostCard from './PostCard'
 import type { Post } from './PostCard'
 
 const POR_PAGINA = 10
+const CAMPOS = 'id, autor_id, texto, imagem_url, criado_em, editado_em, profiles(nome, utilizador, foto_url)'
 
 export default function Feed({ meuId, versao }: { meuId: string; versao: number }) {
   const [posts, setPosts] = useState<Post[]>([])
@@ -14,11 +15,11 @@ export default function Feed({ meuId, versao }: { meuId: string; versao: number 
   async function buscar(de: number) {
     const { data, error } = await supabase
       .from('posts')
-      .select('id, autor_id, texto, imagem_url, criado_em, editado_em, profiles(nome, utilizador, foto_url)')
+      .select(CAMPOS)
       .order('criado_em', { ascending: false })
       .range(de, de + POR_PAGINA - 1)
     if (error) {
-      setErro('Não foi possível carregar as publicações.')
+      setErro('Não foi possível carregar: ' + error.message)
       return []
     }
     return (data as unknown as Post[]) ?? []
@@ -57,10 +58,7 @@ export default function Feed({ meuId, versao }: { meuId: string; versao: number 
         <PostCard key={p.id} post={p} meuId={meuId} onApagado={iniciar} />
       ))}
       {temMais && (
-        <button
-          onClick={maisPosts}
-          className="rounded-full border-2 border-roxo py-3 font-semibold text-roxo"
-        >
+        <button onClick={maisPosts} className="rounded-full border-2 border-roxo py-3 font-semibold text-roxo">
           Ver mais
         </button>
       )}
