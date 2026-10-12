@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import Comentarios from './Comentarios'
+import { Avatar, FotoPost } from './Fotos'
 
 export type Post = {
   id: string
@@ -67,7 +68,7 @@ export default function PostCard({ post, meuId, onApagado }: Props) {
   }
 
   async function partilhar() {
-    const url = 'https://euetuapp.netlify.app'
+    const url = 'https://saprinho.github.io/Eu-e-Tu/'
     if (navigator.share) {
       try {
         await navigator.share({ title: 'Eu e Tu', text: guardado ?? 'Vê na Eu e Tu', url })
@@ -83,13 +84,7 @@ export default function PostCard({ post, meuId, onApagado }: Props) {
   return (
     <div className="rounded-2xl bg-white p-4 shadow-md">
       <div className="flex items-center gap-3">
-        {foto ? (
-          <img src={foto} alt="" className="h-11 w-11 rounded-full object-cover" />
-        ) : (
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-roxo to-rosa font-bold text-white">
-            {nome.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <Avatar nome={nome} url={foto} tamanho="h-11 w-11" />
         <div>
           <p className="font-bold text-escuro">{nome}</p>
           <p className="text-xs text-gray-500">
@@ -118,9 +113,7 @@ export default function PostCard({ post, meuId, onApagado }: Props) {
         guardado && <p className="mt-3 whitespace-pre-wrap text-gray-800">{guardado}</p>
       )}
 
-      {post.imagem_url && (
-        <img src={post.imagem_url} alt="" loading="lazy" className="mt-3 w-full rounded-2xl object-cover" />
-      )}
+      {post.imagem_url && <FotoPost url={post.imagem_url} />}
 
       <div className="mt-3 flex flex-wrap gap-5 text-sm font-semibold">
         <button onClick={alternarGosto} className={gostei ? 'text-rosa' : 'text-gray-600'}>
