@@ -4,7 +4,8 @@ import PostCard from './PostCard'
 import type { Post } from './PostCard'
 
 const POR_PAGINA = 10
-const CAMPOS = 'id, autor_id, texto, imagem_url, criado_em, editado_em, profiles(nome, utilizador, foto_url)'
+const CAMPOS =
+  'id, autor_id, texto, imagem_url, criado_em, editado_em, profiles!posts_autor_id_fkey(nome, utilizador, foto_url)'
 
 export default function Feed({ meuId, versao }: { meuId: string; versao: number }) {
   const [posts, setPosts] = useState<Post[]>([])
