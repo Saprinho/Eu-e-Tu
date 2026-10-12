@@ -25,18 +25,43 @@ export function Avatar({ nome, url, tamanho }: AvatarProps) {
   )
 }
 
-export function FotoPost({ url }: { url: string }) {
+type FotoPostProps = {
+  url: string
+  gostos: number
+  gostei: boolean
+  comentarios: number
+  onGosto: () => void
+  onComentar: () => void
+}
+
+export function FotoPost(p: FotoPostProps) {
   const [aberto, setAberto] = useState(false)
+
+  function comentar() {
+    setAberto(false)
+    p.onComentar()
+  }
+
   return (
     <>
       <img
-        src={url}
+        src={p.url}
         alt=""
         loading="lazy"
         onClick={() => setAberto(true)}
         className="mt-3 w-full cursor-pointer rounded-2xl object-cover"
       />
-      {aberto && <Visualizador url={url} onFechar={() => setAberto(false)} />}
+      {aberto && (
+        <Visualizador
+          url={p.url}
+          onFechar={() => setAberto(false)}
+          gostos={p.gostos}
+          gostei={p.gostei}
+          comentarios={p.comentarios}
+          onGosto={p.onGosto}
+          onComentar={comentar}
+        />
+      )}
     </>
   )
 }
