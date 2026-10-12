@@ -4,7 +4,8 @@ import { supabase } from './supabase'
 import Auth from './Auth'
 import PerfilEcra from './PerfilEcra'
 import Feed from './Feed'
-import Publicar from './Publicar'
+import Videos from './Videos'
+import PublicarEcra from './PublicarEcra'
 
 type Aba = 'inicio' | 'videos' | 'publicar' | 'mensagens' | 'perfil'
 
@@ -19,10 +20,17 @@ const abas: { id: Aba; texto: string }[] = [
 function Principal({ session }: { session: Session }) {
   const [aba, setAba] = useState<Aba>('inicio')
   const [versao, setVersao] = useState(0)
+  const [versaoV, setVersaoV] = useState(0)
+  const meuId = session.user.id
 
   function publicado() {
     setVersao(versao + 1)
     setAba('inicio')
+  }
+
+  function videoPublicado() {
+    setVersaoV(versaoV + 1)
+    setAba('videos')
   }
 
   return (
@@ -32,10 +40,13 @@ function Principal({ session }: { session: Session }) {
       </header>
 
       <main className="px-4 py-6 max-w-md mx-auto">
-        {aba === 'inicio' && <Feed meuId={session.user.id} versao={versao} />}
-        {aba === 'publicar' && <Publicar session={session} onPublicado={publicado} />}
+        {aba === 'inicio' && <Feed meuId={meuId} versao={versao} />}
+        {aba === 'videos' && <Videos meuId={meuId} versao={versaoV} />}
+        {aba === 'publicar' && (
+          <PublicarEcra session={session} onPublicado={publicado} onVideoPublicado={videoPublicado} />
+        )}
         {aba === 'perfil' && <PerfilEcra session={session} />}
-        {(aba === 'videos' || aba === 'mensagens') && (
+        {aba === 'mensagens' && (
           <div className="rounded-2xl bg-white p-5 shadow-md text-center">
             <p className="text-gray-600">Esta secção chega numa próxima etapa.</p>
           </div>
@@ -47,10 +58,7 @@ function Principal({ session }: { session: Session }) {
           <button
             key={a.id}
             onClick={() => setAba(a.id)}
-            className={
-              'flex-1 py-4 text-xs font-semibold ' +
-              (aba === a.id ? 'text-roxo' : 'text-gray-500')
-            }
+            className={'flex-1 py-4 text-xs font-semibold ' + (aba === a.id ? 'text-roxo' : 'text-gray-500')}
           >
             {a.texto}
           </button>
