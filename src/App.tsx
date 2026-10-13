@@ -2,105 +2,8 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import Auth from './Auth'
-import PerfilEcra from './PerfilEcra'
-import Feed from './Feed'
-import Videos from './Videos'
-import PublicarEcra from './PublicarEcra'
-import Pesquisa from './Pesquisa'
-import PerfilPublico from './PerfilPublico'
-import CaixaPublicar from './CaixaPublicar'
-
-type Aba = 'inicio' | 'videos' | 'publicar' | 'mensagens' | 'perfil'
-
-const abas: { id: Aba; texto: string }[] = [
-  { id: 'inicio', texto: 'Início' },
-  { id: 'videos', texto: 'Vídeos' },
-  { id: 'publicar', texto: 'Publicar' },
-  { id: 'mensagens', texto: 'Mensagens' },
-  { id: 'perfil', texto: 'Perfil' },
-]
-
-function Principal({ session }: { session: Session }) {
-  const [aba, setAba] = useState<Aba>('inicio')
-  const [versao, setVersao] = useState(0)
-  const [versaoV, setVersaoV] = useState(0)
-  const [pesquisa, setPesquisa] = useState(false)
-  const [verPerfil, setVerPerfil] = useState<string | null>(null)
-  const meuId = session.user.id
-
-  function publicado() {
-    setVersao(versao + 1)
-    setAba('inicio')
-  }
-
-  function videoPublicado() {
-    setVersaoV(versaoV + 1)
-    setAba('videos')
-  }
-
-  function irPara(a: Aba) {
-    setAba(a)
-    setPesquisa(false)
-    setVerPerfil(null)
-  }
-
-  return (
-    <div className="min-h-screen bg-white pb-24">
-      <header className="relative px-6 py-5 text-white bg-gradient-to-r from-roxo via-azul to-rosa shadow-md">
-        <h1 className="text-2xl font-extrabold">Eu e Tu</h1>
-        <button
-          onClick={() => {
-            setVerPerfil(null)
-            setPesquisa(true)
-          }}
-          aria-label="Pesquisar"
-          className="absolute right-32 top-3 rounded-full bg-black/40 px-3 py-2 text-sm font-semibold"
-        >
-          🔍
-        </button>
-      </header>
-
-      <main className="px-4 py-6 max-w-md mx-auto">
-        {verPerfil ? (
-          <PerfilPublico userId={verPerfil} meuId={meuId} onVoltar={() => setVerPerfil(null)} />
-        ) : pesquisa ? (
-          <Pesquisa meuId={meuId} onAbrir={setVerPerfil} />
-        ) : (
-          <>
-            {aba === 'inicio' && (
-              <>
-                <CaixaPublicar meuId={meuId} onAbrir={() => irPara('publicar')} />
-                <Feed meuId={meuId} versao={versao} />
-              </>
-            )}
-            {aba === 'videos' && <Videos meuId={meuId} versao={versaoV} />}
-            {aba === 'publicar' && (
-              <PublicarEcra session={session} onPublicado={publicado} onVideoPublicado={videoPublicado} />
-            )}
-            {aba === 'perfil' && <PerfilEcra session={session} />}
-            {aba === 'mensagens' && (
-              <div className="rounded-2xl bg-white p-5 shadow-md text-center">
-                <p className="text-gray-600">Esta secção chega numa próxima etapa.</p>
-              </div>
-            )}
-          </>
-        )}
-      </main>
-
-      <nav className="fixed bottom-0 left-0 right-0 flex border-t border-gray-200 bg-white">
-        {abas.map((a) => (
-          <button
-            key={a.id}
-            onClick={() => irPara(a.id)}
-            className={'flex-1 py-4 text-xs font-semibold ' + (aba === a.id && !pesquisa && !verPerfil ? 'text-roxo' : 'text-gray-500')}
-          >
-            {a.texto}
-          </button>
-        ))}
-      </nav>
-    </div>
-  )
-}
+import Inicial from './Inicial'
+import Principal from './Principal'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -128,37 +31,5 @@ export default function App() {
     return <Auth modoInicial={ecra} onVoltar={() => setEcra('inicio')} />
   }
 
-  return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="px-6 pt-10 pb-12 text-center text-white bg-gradient-to-br from-roxo via-azul to-rosa rounded-b-[2.5rem] shadow-lg">
-        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-bold">
-          E&amp;T
-        </div>
-        <h1 className="text-4xl font-extrabold">Eu e Tu</h1>
-        <p className="mt-2 text-lg opacity-90">Conecta-te com o teu mundo</p>
-      </header>
-
-      <main className="flex-1 px-6 py-8 max-w-md mx-auto w-full">
-        <p className="text-center text-gray-600">
-          A rede social onde partilhas fotografias, vídeos e momentos, e falas com
-          os teus amigos em segurança.
-        </p>
-
-        <div className="mt-8 flex flex-col gap-3">
-          <button
-            onClick={() => setEcra('criar')}
-            className="rounded-full bg-gradient-to-r from-roxo to-rosa py-3 text-lg font-semibold text-white shadow-md"
-          >
-            Criar conta
-          </button>
-          <button
-            onClick={() => setEcra('entrar')}
-            className="rounded-full border-2 border-roxo py-3 text-lg font-semibold text-roxo"
-          >
-            Iniciar sessão
-          </button>
-        </div>
-      </main>
-    </div>
-  )
+  return <Inicial onCriar={() => setEcra('criar')} onEntrar={() => setEcra('entrar')} />
 }
