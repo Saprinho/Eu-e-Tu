@@ -8,6 +8,7 @@ import Videos from './Videos'
 import PublicarEcra from './PublicarEcra'
 import Pesquisa from './Pesquisa'
 import PerfilPublico from './PerfilPublico'
+import CaixaPublicar from './CaixaPublicar'
 
 type Aba = 'inicio' | 'videos' | 'publicar' | 'mensagens' | 'perfil'
 
@@ -66,7 +67,12 @@ function Principal({ session }: { session: Session }) {
           <Pesquisa meuId={meuId} onAbrir={setVerPerfil} />
         ) : (
           <>
-            {aba === 'inicio' && <Feed meuId={meuId} versao={versao} />}
+            {aba === 'inicio' && (
+              <>
+                <CaixaPublicar meuId={meuId} onAbrir={() => irPara('publicar')} />
+                <Feed meuId={meuId} versao={versao} />
+              </>
+            )}
             {aba === 'videos' && <Videos meuId={meuId} versao={versaoV} />}
             {aba === 'publicar' && (
               <PublicarEcra session={session} onPublicado={publicado} onVideoPublicado={videoPublicado} />
