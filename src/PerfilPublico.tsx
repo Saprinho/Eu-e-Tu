@@ -14,12 +14,17 @@ type Perfil = {
   foto_url: string | null
 }
 
-type Props = { userId: string; meuId: string; onVoltar: () => void }
+type Props = {
+  userId: string
+  meuId: string
+  onVoltar: () => void
+  onMensagem: (id: string, nome: string) => void
+}
 
 const CAMPOS =
   'id, autor_id, texto, imagem_url, criado_em, editado_em, profiles!posts_autor_id_fkey(nome, utilizador, foto_url)'
 
-export default function PerfilPublico({ userId, meuId, onVoltar }: Props) {
+export default function PerfilPublico({ userId, meuId, onVoltar, onMensagem }: Props) {
   const [perfil, setPerfil] = useState<Perfil | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
   const [seguidores, setSeguidores] = useState(0)
@@ -83,9 +88,17 @@ export default function PerfilPublico({ userId, meuId, onVoltar }: Props) {
           <p><span className="font-bold text-escuro">{aSeguir}</span> a seguir</p>
         </div>
         {!meu && (
-          <div className="flex justify-center">
-            <AcoesPessoa meuId={meuId} outroId={userId} onMudou={contar} />
-          </div>
+          <>
+            <button
+              onClick={() => onMensagem(perfil.id, perfil.nome)}
+              className="mt-3 rounded-full border-2 border-roxo px-5 py-2 text-sm font-semibold text-roxo"
+            >
+              Mensagem
+            </button>
+            <div className="flex justify-center">
+              <AcoesPessoa meuId={meuId} outroId={userId} onMudou={contar} />
+            </div>
+          </>
         )}
       </div>
       {posts.length === 0 && <p className="text-center text-gray-500">Ainda não há publicações.</p>}
