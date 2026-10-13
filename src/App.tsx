@@ -6,6 +6,8 @@ import PerfilEcra from './PerfilEcra'
 import Feed from './Feed'
 import Videos from './Videos'
 import PublicarEcra from './PublicarEcra'
+import Pesquisa from './Pesquisa'
+import PerfilPublico from './PerfilPublico'
 
 type Aba = 'inicio' | 'videos' | 'publicar' | 'mensagens' | 'perfil'
 
@@ -21,6 +23,8 @@ function Principal({ session }: { session: Session }) {
   const [aba, setAba] = useState<Aba>('inicio')
   const [versao, setVersao] = useState(0)
   const [versaoV, setVersaoV] = useState(0)
+  const [pesquisa, setPesquisa] = useState(false)
+  const [verPerfil, setVerPerfil] = useState<string | null>(null)
   const meuId = session.user.id
 
   function publicado() {
@@ -33,23 +37,47 @@ function Principal({ session }: { session: Session }) {
     setAba('videos')
   }
 
+  function irPara(a: Aba) {
+    setAba(a)
+    setPesquisa(false)
+    setVerPerfil(null)
+  }
+
   return (
     <div className="min-h-screen bg-white pb-24">
-      <header className="px-6 py-5 text-white bg-gradient-to-r from-roxo via-azul to-rosa shadow-md">
+      <header className="relative px-6 py-5 text-white bg-gradient-to-r from-roxo via-azul to-rosa shadow-md">
         <h1 className="text-2xl font-extrabold">Eu e Tu</h1>
+        <button
+          onClick={() => {
+            setVerPerfil(null)
+            setPesquisa(true)
+          }}
+          aria-label="Pesquisar"
+          className="absolute right-32 top-3 rounded-full bg-black/40 px-3 py-2 text-sm font-semibold"
+        >
+          🔍
+        </button>
       </header>
 
       <main className="px-4 py-6 max-w-md mx-auto">
-        {aba === 'inicio' && <Feed meuId={meuId} versao={versao} />}
-        {aba === 'videos' && <Videos meuId={meuId} versao={versaoV} />}
-        {aba === 'publicar' && (
-          <PublicarEcra session={session} onPublicado={publicado} onVideoPublicado={videoPublicado} />
-        )}
-        {aba === 'perfil' && <PerfilEcra session={session} />}
-        {aba === 'mensagens' && (
-          <div className="rounded-2xl bg-white p-5 shadow-md text-center">
-            <p className="text-gray-600">Esta secção chega numa próxima etapa.</p>
-          </div>
+        {verPerfil ? (
+          <PerfilPublico userId={verPerfil} meuId={meuId} onVoltar={() => setVerPerfil(null)} />
+        ) : pesquisa ? (
+          <Pesquisa meuId={meuId} onAbrir={setVerPerfil} />
+        ) : (
+          <>
+            {aba === 'inicio' && <Feed meuId={meuId} versao={versao} />}
+            {aba === 'videos' && <Videos meuId={meuId} versao={versaoV} />}
+            {aba === 'publicar' && (
+              <PublicarEcra session={session} onPublicado={publicado} onVideoPublicado={videoPublicado} />
+            )}
+            {aba === 'perfil' && <PerfilEcra session={session} />}
+            {aba === 'mensagens' && (
+              <div className="rounded-2xl bg-white p-5 shadow-md text-center">
+                <p className="text-gray-600">Esta secção chega numa próxima etapa.</p>
+              </div>
+            )}
+          </>
         )}
       </main>
 
@@ -57,8 +85,8 @@ function Principal({ session }: { session: Session }) {
         {abas.map((a) => (
           <button
             key={a.id}
-            onClick={() => setAba(a.id)}
-            className={'flex-1 py-4 text-xs font-semibold ' + (aba === a.id ? 'text-roxo' : 'text-gray-500')}
+            onClick={() => irPara(a.id)}
+            className={'flex-1 py-4 text-xs font-semibold ' + (aba === a.id && !pesquisa && !verPerfil ? 'text-roxo' : 'text-gray-500')}
           >
             {a.texto}
           </button>
